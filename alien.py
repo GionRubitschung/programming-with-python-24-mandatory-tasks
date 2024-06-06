@@ -13,7 +13,7 @@ class Sub(Enum):
     SHIP = 1
 
 
-def common_divisor(a: int | Sub, b: int | Sub) -> bool:
+def common_divisor(a: int, b: int) -> bool:
     """
     Check if two numbers have a common divisor greater than 1.
 
@@ -24,8 +24,6 @@ def common_divisor(a: int | Sub, b: int | Sub) -> bool:
     Returns:
       bool: True if the two numbers have a common divisor greater than 1, False otherwise.
     """
-    a = 1 if isinstance(a, Sub) else a
-    b = 1 if isinstance(b, Sub) else b
     return gcd(a, b) > 1
 
 
@@ -49,8 +47,10 @@ def get_neighbors(maze: Matrix2Dim, cell: Tuple[int, int]) -> List[Tuple[int, in
             and 0 <= ny < maze.dimensions[1]
             and (
                 common_divisor(maze[cell], maze[nx, ny])
-                or isinstance(maze[cell], Sub)
-                or isinstance(maze[nx, ny], Sub)
+                or maze[cell] == Sub.SHIP.value
+                or maze[nx, ny] == Sub.SHIP.value
+                or maze[cell] == Sub.ALIEN.value
+                or maze[nx, ny] == Sub.ALIEN.value
             )
         ):
             neighbors.append((nx, ny))
@@ -61,7 +61,15 @@ def find_path(
     maze: Matrix2Dim, start: Tuple[int, int], end: Tuple[int, int]
 ) -> List[int]:
     """
-    Finds a path from the start cell to the end cell in a given maze.
+    Finds a path from the start cell to the end cell in a given maze using the Breadth-First Search (BFS) algorithm.
+
+    BFS is an algorithm for traversing or searching tree or graph data structures.
+    It starts at the start cell and explores all of its neighbors before moving on to the next level of neighbors.
+    The algorithm uses a queue to keep track of the cells to visit next.
+    The queue is a deque (double-ended queue) that allows insertion and deletion of elements from both ends.
+    In this case visited fields are added to the right end of the deque with the
+    append method and removed from the left end with the popleft method.
+    This ensures that the BFS algorithm explores cells in the order they were discovered.
 
     Args:
       maze (Matrix2Dim): The maze represented as a 2-dimensional matrix.
@@ -69,7 +77,9 @@ def find_path(
       end (Tuple[int, int]): The coordinates of the end cell.
 
     Returns:
-      List[int]: The path from the start cell to the end cell as a list of integers.
+      List[int]:
+        The path from the start cell to the end cell as a list of integers.
+        If no path is found, an empty list is returned.
     """
     visited = {start}
     queue = deque([(start, [maze[start]])])
@@ -97,11 +107,10 @@ def find_start_end(maze: Matrix2Dim) -> Tuple[Tuple[int, int], Tuple[int, int]]:
     start, end = None, None
     for i in range(maze.dimensions[0]):
         for j in range(maze.dimensions[1]):
-            if isinstance(maze[i, j], Sub):
-                if maze[i, j] == Sub.ALIEN:
-                    start = (i, j)
-                elif maze[i, j] == Sub.SHIP:
-                    end = (i, j)
+            if maze[i, j] == Sub.ALIEN.value:
+                start = (i, j)
+            elif maze[i, j] == Sub.SHIP.value:
+                end = (i, j)
     return start, end
 
 
@@ -118,32 +127,49 @@ def load_maze(file_path: Path) -> Matrix2Dim:
             or a string.
     """
     with open(file_path, "r") as file:
-        elements = [
-            [
-                (
-                    int(num)
-                    if num.isdigit()
-                    else Sub.ALIEN if num == "Y" else Sub.SHIP if num == "X" else num
-                )
-                for num in line.split()
-            ]
-            for line in file
-        ]
+        lines = file.readlines()
+
+    elements = []
+    for line in lines:
+        row = []
+        for num in line.split():
+            match num:
+                case _ if num.isdigit():
+                    row.append(int(num))
+                case "X":
+                    row.append(Sub.ALIEN.value)
+                case "Y":
+                    row.append(Sub.SHIP.value)
+                case _:
+                    raise ValueError(f"Invalid element in the maze: {num}")
+        elements.append(row)
+
     return Matrix2Dim((len(elements), len(elements[0])), elements)
 
 
 def main():
     file_path = Path("alien.txt")
+
+    if not file_path.exists():
+        raise Exception("File alien.txt not found.")
+
     maze = load_maze(file_path)
     start, end = find_start_end(maze)
 
     if start is None or end is None:
-        print("No alien and spaceship found in the maze.")
-        return
+        raise Exception("No alien and or spaceship found in the maze.")
 
     path = find_path(maze, start, end)
+    path = [
+        (
+            "Alien"
+            if cell == Sub.ALIEN.value
+            else "Spaceship" if cell == Sub.SHIP.value else str(cell)
+        )
+        for cell in path
+    ]
     if path:
-        print(" -> ".join(map(str, path)))
+        print(" -> ".join(path))
     else:
         print("No path found from the alien to the spaceship.")
 

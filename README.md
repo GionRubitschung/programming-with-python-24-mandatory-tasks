@@ -1,36 +1,51 @@
 # BTI1013a Mandatory Programming Task Gion Rubitschung
-This project contains two Python scripts: alien.py and matrix.py, along with their associated unit tests. The unit tests have been written with pytest.
+This project contains two Python scripts: alien.py and matrix.py, along with their associated unit tests.
 
-Getting Started
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+## Alien
 
-Prerequisites
-You need to have Python installed on your machine. You can download it from the official website: https://www.python.org/downloads/
+To run the `alien.py` script run
 
-Installing
-Clone the repository to your local machine:
+```sh
+python alien.py
+```
 
->
-Navigate to the project directory:
+or
 
->
-Install the required packages:
+```sh
+python3 alien.py
+```
 
-txt
-Running the scripts
-You can run the alien.py and matrix.py scripts as follows:
+The script will print out the path to the spaceship.
 
-py
-Running the tests
-This project uses pytest for testing. To run the tests, use the following command:
+## Matrix
 
+To run the `matrix.py` script run
+
+```sh
+python matrix.py
+```
+
+or
+
+```sh
+python3 matrix.py
+```
+
+The script will print out different matrices, run all the methods the matrix class has and print out the results.
+The matrix class with its implementation can be found under the `matrix` module.
+
+## Unittests
+
+The unit tests have been written with pytest. To install pytest run
+
+```sh
+pip install pytest
+```
+
+Then run
+
+```sh
 pytest
-Authors
-Your Name
-License
-This project is licensed under the MIT License - see the LICENSE.md file for details
+```
 
-Acknowledgments
-Hat tip to anyone whose code was used
-Inspiration
-etc
+To execute the unit tests. The tests itself are located in the `tests` directory.
